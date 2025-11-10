@@ -7,14 +7,14 @@ import { db } from "@/server/db"
     const {data} = await req.json()
     const firstName = data.first_name;
     const lastName= data.last_name;
-    const email = data.email_address;
+    const emailAd = data.email_addresses[0].email_address;
     const imageUrl = data.image_url;
 
     await db.user.create({
         data: {
             firstName:firstName,
             lastName:lastName,
-            email:email,
+            email:emailAd,
             imageUrl:imageUrl
         }
     })
