@@ -1,10 +1,10 @@
-import { Button } from '@/components/ui/button'
+import LinkAccButton from '@/components/ui/link-button'
 import React from 'react'
 
 const page = () => {
   return (
     <div>
-      <Button>Example</Button>
+      <LinkAccButton/>
     </div>
   )
 }
