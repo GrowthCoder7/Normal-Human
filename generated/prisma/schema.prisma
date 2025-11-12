@@ -12,9 +12,19 @@ datasource db {
 }
 
 model User {
-  id        String  @id @default(uuid())
+  id        String    @id @default(uuid())
   firstName String
   lastName  String
-  email     String  @unique
+  email     String    @unique
   imageUrl  String?
+  Accounts  Account[]
+}
+
+model Account {
+  id           String @id @default(uuid())
+  userId       String
+  name         String
+  emailAddress String
+  accessToken  String @unique
+  user         User   @relation(fields: [userId], references: [id])
 }
