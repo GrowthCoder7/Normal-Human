@@ -138,9 +138,74 @@ exports.Prisma.AccountScalarFieldEnum = {
   nextDeltaToken: 'nextDeltaToken'
 };
 
+exports.Prisma.ThreadScalarFieldEnum = {
+  id: 'id',
+  subject: 'subject',
+  lastMessageDate: 'lastMessageDate',
+  participantIds: 'participantIds',
+  accountId: 'accountId',
+  done: 'done',
+  inboxStatus: 'inboxStatus',
+  draftStatus: 'draftStatus',
+  sentStatus: 'sentStatus'
+};
+
+exports.Prisma.EmailScalarFieldEnum = {
+  id: 'id',
+  threadId: 'threadId',
+  createdTime: 'createdTime',
+  lastModifiedTime: 'lastModifiedTime',
+  sentAt: 'sentAt',
+  receivedAt: 'receivedAt',
+  internetMessageId: 'internetMessageId',
+  subject: 'subject',
+  sysLabels: 'sysLabels',
+  keywords: 'keywords',
+  sysClassifications: 'sysClassifications',
+  sensitivity: 'sensitivity',
+  meetingMessageMethod: 'meetingMessageMethod',
+  fromId: 'fromId',
+  hasAttachments: 'hasAttachments',
+  body: 'body',
+  bodySnippet: 'bodySnippet',
+  inReplyTo: 'inReplyTo',
+  references: 'references',
+  threadIndex: 'threadIndex',
+  internetHeaders: 'internetHeaders',
+  nativeProperties: 'nativeProperties',
+  folderId: 'folderId',
+  omitted: 'omitted',
+  emailLabel: 'emailLabel'
+};
+
+exports.Prisma.EmailAddressScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  address: 'address',
+  raw: 'raw',
+  accountId: 'accountId'
+};
+
+exports.Prisma.EmailAttachmentScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  mimeType: 'mimeType',
+  size: 'size',
+  inline: 'inline',
+  contentId: 'contentId',
+  content: 'content',
+  contentLocation: 'contentLocation',
+  emailId: 'emailId'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
 };
 
 exports.Prisma.QueryMode = {
@@ -153,10 +218,39 @@ exports.Prisma.NullsOrder = {
   last: 'last'
 };
 
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+exports.Sensitivity = exports.$Enums.Sensitivity = {
+  normal: 'normal',
+  private: 'private',
+  personal: 'personal',
+  confidential: 'confidential'
+};
+
+exports.MeetingMessageMethod = exports.$Enums.MeetingMessageMethod = {
+  request: 'request',
+  reply: 'reply',
+  cancel: 'cancel',
+  counter: 'counter',
+  other: 'other'
+};
+
+exports.EmailLabel = exports.$Enums.EmailLabel = {
+  inbox: 'inbox',
+  sent: 'sent',
+  draft: 'draft'
+};
 
 exports.Prisma.ModelName = {
   User: 'User',
-  Account: 'Account'
+  Account: 'Account',
+  Thread: 'Thread',
+  Email: 'Email',
+  EmailAddress: 'EmailAddress',
+  EmailAttachment: 'EmailAttachment'
 };
 
 /**
