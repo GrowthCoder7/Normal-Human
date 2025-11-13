@@ -86,6 +86,7 @@ export const GET = async (req: NextRequest) => {
   }
 
   //trigger intial sync endpoint
+  //waitUntil helps run an async request
   waitUntil(
     axios.post(`${process.env.NEXT_PUBLIC_URL}/api/initial-sync`, {
       // Pass the ID of the record we just created/updated
