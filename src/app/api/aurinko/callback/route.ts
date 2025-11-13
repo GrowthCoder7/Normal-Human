@@ -2,9 +2,11 @@ import { exchangeCode, getAccountDetails } from "@/lib/aurinko";
 import { db } from "@/server/db";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { waitUntil } from "@vercel/functions"
+import axios from "axios";
+import { log } from "console";
 
 export const GET = async (req: NextRequest) => {
-  // Get the Clerk user's session
   const { userId: clerkId } = await auth();
   const user = await currentUser();
 
@@ -12,51 +14,42 @@ export const GET = async (req: NextRequest) => {
     return new NextResponse("Unauthenticated", { status: 401 });
   }
 
-  // Get the primary email address from Clerk
   const primaryEmail = user.emailAddresses[0]?.emailAddress;
   if (!primaryEmail) {
     return NextResponse.redirect(new URL('/mail?error=no_email', req.url));
   }
 
-  // --- Parse Callback ---
   const params = req.nextUrl.searchParams;
   const status = params.get('status');
   if (status !== 'success') {
     return NextResponse.redirect(new URL('/mail?error=aurinko_failed', req.url));
   }
-
   const code = params.get('code');
   if (!code) {
     return NextResponse.redirect(new URL('/mail?error=aurinko_no_code', req.url));
   }
 
-  // --- Exchange Token ---
   const token = await exchangeCode(code);
   if (!token) {
     return NextResponse.redirect(new URL('/mail?error=aurinko_token_exchange', req.url));
   }
-
   const accountDetails = await getAccountDetails(token.accessToken);
   if (!accountDetails) {
     return NextResponse.redirect(new URL('/mail?error=aurinko_account_details', req.url));
   }
 
-  // --- DATABASE LOGIC (THE FIX) ---
-  let dbUser;
+  let dbAccount; // <-- Define dbAccount here
   try {
-    // 1. Find or create the User in your DB using their @unique email
-    dbUser = await db.user.upsert({
-      where: {
-        email: primaryEmail,
-      },
+    await db.user.upsert({
+      where: { id: clerkId },
       update: {
-        // Update fields if they changed in Clerk
         firstName: user.firstName ?? '',
         lastName: user.lastName ?? '',
+        email: primaryEmail,
         imageUrl: user.imageUrl,
       },
       create: {
-        // id is created by @default(uuid())
+        id: clerkId,
         email: primaryEmail,
         firstName: user.firstName ?? '',
         lastName: user.lastName ?? '',
@@ -64,28 +57,26 @@ export const GET = async (req: NextRequest) => {
       }
     });
 
-    if (!dbUser) {
-      throw new Error("Failed to create or find user.");
-    }
-
-    // 2. Now, create the Account and link it using the User's UUID
-    //    We use the unique accessToken to upsert
-    await db.account.upsert({
+    // Upsert the account and store the result in dbAccount
+    dbAccount = await db.account.upsert({
       where: {
-        accessToken: token.accessToken,
+        userId_emailAddress: {
+          userId: clerkId,
+          emailAddress: accountDetails.email
+        }
       },
       update: {
-        // In case it already exists, link it to this user
-        userId: dbUser.id,
+        accessToken: token.accessToken,
         name: accountDetails.name,
-        emailAddress: accountDetails.email,
+        nextDeltaToken: null,
       },
       create: {
-        // id is created by @default(uuid())
-        userId: dbUser.id, // This is the UUID from the User table
+        // id is @default(uuid())
+        userId: clerkId,
         name: accountDetails.name,
         emailAddress: accountDetails.email,
-        accessToken: token.accessToken
+        accessToken: token.accessToken,
+        nextDeltaToken: null
       }
     });
 
@@ -94,6 +85,18 @@ export const GET = async (req: NextRequest) => {
     return NextResponse.redirect(new URL('/mail?error=db_error', req.url));
   }
 
-  // 3. Success!
+  //trigger intial sync endpoint
+  waitUntil(
+    axios.post(`${process.env.NEXT_PUBLIC_URL}/api/initial-sync`, {
+      // Pass the ID of the record we just created/updated
+      accountId: dbAccount.id, // <-- This is the internal UUID
+      clerkId: clerkId
+    }).then(res => {
+      log("initial sync triggered", res.status)
+    }).catch(err => {
+      log("initial sync failed", err.response?.data)
+    })
+  )
+
   return NextResponse.redirect(new URL('/mail?success=true', req.url));
 }

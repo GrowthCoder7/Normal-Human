@@ -12,10 +12,13 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(uuid())
+  // 1. CHANGE: The User's ID is now the Clerk ID (e.g., "user_...abc")
+  //    This is the standard, simplest way to sync with Clerk.
+  id        String    @id
   firstName String
   lastName  String
-  email     String    @unique
+  // 2. CHANGE: Removed @unique, as the 'id' (Clerk ID) is the source of truth.
+  email     String
   imageUrl  String?
   Accounts  Account[]
 }
@@ -25,6 +28,17 @@ model Account {
   userId       String
   name         String
   emailAddress String
-  accessToken  String @unique
-  user         User   @relation(fields: [userId], references: [id])
+
+  // 3. CHANGE: An access token can expire and be re-issued.
+  //    It should not be the unique identifier.
+  accessToken String // Removed @unique
+
+  // 4. CHANGE: Made this field optional, as it won't exist on creation.
+  nextDeltaToken String?
+
+  user User @relation(fields: [userId], references: [id])
+
+  // 5. ADD: This is the correct unique constraint:
+  //    A user can only link a specific email address once.
+  // @@unique([userId, emailAddress])
 }

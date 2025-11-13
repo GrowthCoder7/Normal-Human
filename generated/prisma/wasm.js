@@ -106,7 +106,8 @@ exports.Prisma.AccountScalarFieldEnum = {
   userId: 'userId',
   name: 'name',
   emailAddress: 'emailAddress',
-  accessToken: 'accessToken'
+  accessToken: 'accessToken',
+  nextDeltaToken: 'nextDeltaToken'
 };
 
 exports.Prisma.SortOrder = {
@@ -176,13 +177,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id        String    @id @default(uuid())\n  firstName String\n  lastName  String\n  email     String    @unique\n  imageUrl  String?\n  Accounts  Account[]\n}\n\nmodel Account {\n  id           String @id @default(uuid())\n  userId       String\n  name         String\n  emailAddress String\n  accessToken  String @unique\n  user         User   @relation(fields: [userId], references: [id])\n}\n",
-  "inlineSchemaHash": "156ed7c1028e864d70d4e8747cc41bce405bb118bca078f395e72f6db2da56cf",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  // 1. CHANGE: The User's ID is now the Clerk ID (e.g., \"user_...abc\")\n  //    This is the standard, simplest way to sync with Clerk.\n  id        String    @id\n  firstName String\n  lastName  String\n  // 2. CHANGE: Removed @unique, as the 'id' (Clerk ID) is the source of truth.\n  email     String\n  imageUrl  String?\n  Accounts  Account[]\n}\n\nmodel Account {\n  id           String @id @default(uuid())\n  userId       String\n  name         String\n  emailAddress String\n\n  // 3. CHANGE: An access token can expire and be re-issued.\n  //    It should not be the unique identifier.\n  accessToken String // Removed @unique\n\n  // 4. CHANGE: Made this field optional, as it won't exist on creation.\n  nextDeltaToken String?\n\n  user User @relation(fields: [userId], references: [id])\n\n  // 5. ADD: This is the correct unique constraint:\n  //    A user can only link a specific email address once.\n  @@unique([userId, emailAddress])\n}\n",
+  "inlineSchemaHash": "ed36114708ba7911b61b707236e87b6ee2acc1c446a645c559479ef5307b888c",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"firstName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"lastName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"imageUrl\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"Accounts\",\"kind\":\"object\",\"type\":\"Account\",\"relationName\":\"AccountToUser\"}],\"dbName\":null},\"Account\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"emailAddress\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"accessToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"AccountToUser\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"firstName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"lastName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"imageUrl\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"Accounts\",\"kind\":\"object\",\"type\":\"Account\",\"relationName\":\"AccountToUser\"}],\"dbName\":null},\"Account\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"emailAddress\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"accessToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"nextDeltaToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"AccountToUser\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),
