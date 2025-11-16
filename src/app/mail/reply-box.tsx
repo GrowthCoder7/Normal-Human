@@ -57,6 +57,11 @@ const Component = ({ replyDetails }: { replyDetails: NonNullable<RouterOutputs['
                 toast.success("Email sent")
                 // editor?.commands.clearContent()
             }
+            ,
+            onError: (error) => {
+                console.log(error)
+                toast.error(error.message)
+            }
         })
     }
 

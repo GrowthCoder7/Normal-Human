@@ -1,6 +1,8 @@
 import axios from "axios";
 import { log } from "console";
 import type { EmailAddress, EmailMessage, SyncResponse, SyncUpdatedResponse } from "./types";
+import { db } from "@/server/db";
+import { syncEmailsToDb } from "./sync-to-db";
 
 export class Account{
     private token:string;
@@ -22,7 +24,7 @@ export class Account{
         return res.data
     }
 
-    private async getUpdatedEmails({deltaToken,pageToken}:{deltaToken:string,pageToken?:string}){
+    private async getUpdatedEmails({deltaToken,pageToken}:{deltaToken?:string,pageToken?:string}):Promise<SyncUpdatedResponse>{
         let params: Record <string, string> = {}
         if(deltaToken) params.deltaToken = deltaToken
         if(pageToken) params.pageToken = pageToken
@@ -72,6 +74,55 @@ export class Account{
             console.error(error)
         }
     
+    }
+
+    async syncEmails(){
+        const account = await db.account.findFirst({
+            where:{
+                accessToken:this.token
+            }
+        })
+        if(!account) throw new Error(`Account not found for token ${this.token}`)
+        if(!account.nextDeltaToken) throw new Error(`No delta token found for account ${account.id}`)
+        let response = await this.getUpdatedEmails({deltaToken:account.nextDeltaToken})
+
+        let storedDeltaToken = account.nextDeltaToken
+        let allEmails:EmailMessage[] = response.records
+
+        if(response.nextDeltaToken){
+            //sync has completed
+            storedDeltaToken=response.nextDeltaToken
+        }
+
+        while(response.nextPageToken){
+            response = await this.getUpdatedEmails({pageToken:response.nextPageToken});
+            allEmails = allEmails.concat(response.records)
+            if(response.nextDeltaToken){
+                //sync has ended
+                storedDeltaToken=response.nextDeltaToken
+            }
+        }
+
+        try {
+            syncEmailsToDb(allEmails,account.id)
+        } catch (error) {
+            console.error("Error during sync:",error)
+        }
+
+        await db.account.update({
+            where:{
+                id:account.id
+            },
+            data:{
+                nextDeltaToken:storedDeltaToken
+            }
+        })
+
+        //fetch all the pages, if more
+        return{
+            email:allEmails,
+            deltaToken:storedDeltaToken
+        }
     }
 
     async sendEmail({
