@@ -1,19 +1,36 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 //the main file of the project
 //writing the emails to the database
-
 import { log } from "console";
 import type { EmailAddress, EmailAttachment, EmailMessage } from "./types";
 import { db } from "@/server/db";
+import { OramaManager } from "./orama";
+import { turndown } from "./turndown";
+import { getEmbeddings } from "./embedding";
 
 //p-limit stands for promise limit, acts a rate limiter 
 //for db calls , to prevent overloading
 export const syncEmailsToDb= async (emails:EmailMessage[],accountId:string)=>{
     log('Attempting ot sync ',emails.length,'emails')
+    
+    const orama = new OramaManager(accountId)
+    await orama.initialize()
 
     try {
         // Promise.all(emails.map((email,index)=>upsertEmail(email,accountId,index)))
         for(const email of emails){
+            const body = turndown.turndown(email.body ?? email.bodySnippet ?? '')
+            const embeddings = await getEmbeddings(body)
+            await orama.insert({
+                subject: email.subject,
+                body:body,
+                from:email.from.address,
+                rawBody:email.bodySnippet??"",
+                to:email.to.map(t=>t.address),
+                sentAt:email.sentAt.toLocaleString(),
+                threadId:email.threadId,
+                embeddings
+            })
             await upsertEmail(email,accountId,emails.indexOf(email))
         }
     } catch (error) {
