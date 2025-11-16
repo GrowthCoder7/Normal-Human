@@ -35,6 +35,7 @@ model Account {
 
     // 4. CHANGE: Made this field optional, as it won't exist on creation.
     nextDeltaToken String?
+    oramaIndex     Json?
 
     user User @relation(fields: [userId], references: [id])
 

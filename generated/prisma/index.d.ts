@@ -2703,6 +2703,7 @@ export namespace Prisma {
     emailAddress: number
     accessToken: number
     nextDeltaToken: number
+    oramaIndex: number
     _all: number
   }
 
@@ -2732,6 +2733,7 @@ export namespace Prisma {
     emailAddress?: true
     accessToken?: true
     nextDeltaToken?: true
+    oramaIndex?: true
     _all?: true
   }
 
@@ -2814,6 +2816,7 @@ export namespace Prisma {
     emailAddress: string
     accessToken: string
     nextDeltaToken: string | null
+    oramaIndex: JsonValue | null
     _count: AccountCountAggregateOutputType | null
     _min: AccountMinAggregateOutputType | null
     _max: AccountMaxAggregateOutputType | null
@@ -2840,6 +2843,7 @@ export namespace Prisma {
     emailAddress?: boolean
     accessToken?: boolean
     nextDeltaToken?: boolean
+    oramaIndex?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     threads?: boolean | Account$threadsArgs<ExtArgs>
     emailAddresses?: boolean | Account$emailAddressesArgs<ExtArgs>
@@ -2853,6 +2857,7 @@ export namespace Prisma {
     emailAddress?: boolean
     accessToken?: boolean
     nextDeltaToken?: boolean
+    oramaIndex?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["account"]>
 
@@ -2863,6 +2868,7 @@ export namespace Prisma {
     emailAddress?: boolean
     accessToken?: boolean
     nextDeltaToken?: boolean
+    oramaIndex?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["account"]>
 
@@ -2873,9 +2879,10 @@ export namespace Prisma {
     emailAddress?: boolean
     accessToken?: boolean
     nextDeltaToken?: boolean
+    oramaIndex?: boolean
   }
 
-  export type AccountOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "name" | "emailAddress" | "accessToken" | "nextDeltaToken", ExtArgs["result"]["account"]>
+  export type AccountOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "name" | "emailAddress" | "accessToken" | "nextDeltaToken" | "oramaIndex", ExtArgs["result"]["account"]>
   export type AccountInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     threads?: boolean | Account$threadsArgs<ExtArgs>
@@ -2903,6 +2910,7 @@ export namespace Prisma {
       emailAddress: string
       accessToken: string
       nextDeltaToken: string | null
+      oramaIndex: Prisma.JsonValue | null
     }, ExtArgs["result"]["account"]>
     composites: {}
   }
@@ -3335,6 +3343,7 @@ export namespace Prisma {
     readonly emailAddress: FieldRef<"Account", 'String'>
     readonly accessToken: FieldRef<"Account", 'String'>
     readonly nextDeltaToken: FieldRef<"Account", 'String'>
+    readonly oramaIndex: FieldRef<"Account", 'Json'>
   }
     
 
@@ -8752,7 +8761,8 @@ export namespace Prisma {
     name: 'name',
     emailAddress: 'emailAddress',
     accessToken: 'accessToken',
-    nextDeltaToken: 'nextDeltaToken'
+    nextDeltaToken: 'nextDeltaToken',
+    oramaIndex: 'oramaIndex'
   };
 
   export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum]
@@ -8891,6 +8901,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
+   * Reference to a field of type 'QueryMode'
+   */
+  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+  /**
    * Reference to a field of type 'DateTime'
    */
   export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
@@ -8943,20 +8967,6 @@ export namespace Prisma {
    * Reference to a field of type 'Json[]'
    */
   export type ListJsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'Json'
-   */
-  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
-    
-
-
-  /**
-   * Reference to a field of type 'QueryMode'
-   */
-  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -9070,6 +9080,7 @@ export namespace Prisma {
     emailAddress?: StringFilter<"Account"> | string
     accessToken?: StringFilter<"Account"> | string
     nextDeltaToken?: StringNullableFilter<"Account"> | string | null
+    oramaIndex?: JsonNullableFilter<"Account">
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     threads?: ThreadListRelationFilter
     emailAddresses?: EmailAddressListRelationFilter
@@ -9082,6 +9093,7 @@ export namespace Prisma {
     emailAddress?: SortOrder
     accessToken?: SortOrder
     nextDeltaToken?: SortOrderInput | SortOrder
+    oramaIndex?: SortOrderInput | SortOrder
     user?: UserOrderByWithRelationInput
     threads?: ThreadOrderByRelationAggregateInput
     emailAddresses?: EmailAddressOrderByRelationAggregateInput
@@ -9098,6 +9110,7 @@ export namespace Prisma {
     emailAddress?: StringFilter<"Account"> | string
     accessToken?: StringFilter<"Account"> | string
     nextDeltaToken?: StringNullableFilter<"Account"> | string | null
+    oramaIndex?: JsonNullableFilter<"Account">
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     threads?: ThreadListRelationFilter
     emailAddresses?: EmailAddressListRelationFilter
@@ -9110,6 +9123,7 @@ export namespace Prisma {
     emailAddress?: SortOrder
     accessToken?: SortOrder
     nextDeltaToken?: SortOrderInput | SortOrder
+    oramaIndex?: SortOrderInput | SortOrder
     _count?: AccountCountOrderByAggregateInput
     _max?: AccountMaxOrderByAggregateInput
     _min?: AccountMinOrderByAggregateInput
@@ -9125,6 +9139,7 @@ export namespace Prisma {
     emailAddress?: StringWithAggregatesFilter<"Account"> | string
     accessToken?: StringWithAggregatesFilter<"Account"> | string
     nextDeltaToken?: StringNullableWithAggregatesFilter<"Account"> | string | null
+    oramaIndex?: JsonNullableWithAggregatesFilter<"Account">
   }
 
   export type ThreadWhereInput = {
@@ -9592,6 +9607,7 @@ export namespace Prisma {
     emailAddress: string
     accessToken: string
     nextDeltaToken?: string | null
+    oramaIndex?: NullableJsonNullValueInput | InputJsonValue
     user: UserCreateNestedOneWithoutAccountsInput
     threads?: ThreadCreateNestedManyWithoutAccountInput
     emailAddresses?: EmailAddressCreateNestedManyWithoutAccountInput
@@ -9604,6 +9620,7 @@ export namespace Prisma {
     emailAddress: string
     accessToken: string
     nextDeltaToken?: string | null
+    oramaIndex?: NullableJsonNullValueInput | InputJsonValue
     threads?: ThreadUncheckedCreateNestedManyWithoutAccountInput
     emailAddresses?: EmailAddressUncheckedCreateNestedManyWithoutAccountInput
   }
@@ -9614,6 +9631,7 @@ export namespace Prisma {
     emailAddress?: StringFieldUpdateOperationsInput | string
     accessToken?: StringFieldUpdateOperationsInput | string
     nextDeltaToken?: NullableStringFieldUpdateOperationsInput | string | null
+    oramaIndex?: NullableJsonNullValueInput | InputJsonValue
     user?: UserUpdateOneRequiredWithoutAccountsNestedInput
     threads?: ThreadUpdateManyWithoutAccountNestedInput
     emailAddresses?: EmailAddressUpdateManyWithoutAccountNestedInput
@@ -9626,6 +9644,7 @@ export namespace Prisma {
     emailAddress?: StringFieldUpdateOperationsInput | string
     accessToken?: StringFieldUpdateOperationsInput | string
     nextDeltaToken?: NullableStringFieldUpdateOperationsInput | string | null
+    oramaIndex?: NullableJsonNullValueInput | InputJsonValue
     threads?: ThreadUncheckedUpdateManyWithoutAccountNestedInput
     emailAddresses?: EmailAddressUncheckedUpdateManyWithoutAccountNestedInput
   }
@@ -9637,6 +9656,7 @@ export namespace Prisma {
     emailAddress: string
     accessToken: string
     nextDeltaToken?: string | null
+    oramaIndex?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type AccountUpdateManyMutationInput = {
@@ -9645,6 +9665,7 @@ export namespace Prisma {
     emailAddress?: StringFieldUpdateOperationsInput | string
     accessToken?: StringFieldUpdateOperationsInput | string
     nextDeltaToken?: NullableStringFieldUpdateOperationsInput | string | null
+    oramaIndex?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type AccountUncheckedUpdateManyInput = {
@@ -9654,6 +9675,7 @@ export namespace Prisma {
     emailAddress?: StringFieldUpdateOperationsInput | string
     accessToken?: StringFieldUpdateOperationsInput | string
     nextDeltaToken?: NullableStringFieldUpdateOperationsInput | string | null
+    oramaIndex?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type ThreadCreateInput = {
@@ -10219,6 +10241,29 @@ export namespace Prisma {
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type UserScalarRelationFilter = {
     is?: UserWhereInput
@@ -10257,6 +10302,7 @@ export namespace Prisma {
     emailAddress?: SortOrder
     accessToken?: SortOrder
     nextDeltaToken?: SortOrder
+    oramaIndex?: SortOrder
   }
 
   export type AccountMaxOrderByAggregateInput = {
@@ -10275,6 +10321,32 @@ export namespace Prisma {
     emailAddress?: SortOrder
     accessToken?: SortOrder
     nextDeltaToken?: SortOrder
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type DateTimeFilter<$PrismaModel = never> = {
@@ -10399,29 +10471,6 @@ export namespace Prisma {
     hasSome?: InputJsonValue[] | ListJsonFieldRefInput<$PrismaModel>
     isEmpty?: boolean
   }
-  export type JsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
 
   export type EnumEmailLabelFilter<$PrismaModel = never> = {
     equals?: $Enums.EmailLabel | EnumEmailLabelFieldRefInput<$PrismaModel>
@@ -10540,32 +10589,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedEnumMeetingMessageMethodNullableFilter<$PrismaModel>
     _max?: NestedEnumMeetingMessageMethodNullableFilter<$PrismaModel>
-  }
-  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedJsonNullableFilter<$PrismaModel>
-    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type EnumEmailLabelWithAggregatesFilter<$PrismaModel = never> = {
@@ -11496,6 +11519,29 @@ export namespace Prisma {
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type NestedDateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
@@ -11575,29 +11621,6 @@ export namespace Prisma {
     _min?: NestedEnumMeetingMessageMethodNullableFilter<$PrismaModel>
     _max?: NestedEnumMeetingMessageMethodNullableFilter<$PrismaModel>
   }
-  export type NestedJsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<NestedJsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
 
   export type NestedEnumEmailLabelWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.EmailLabel | EnumEmailLabelFieldRefInput<$PrismaModel>
@@ -11642,6 +11665,7 @@ export namespace Prisma {
     emailAddress: string
     accessToken: string
     nextDeltaToken?: string | null
+    oramaIndex?: NullableJsonNullValueInput | InputJsonValue
     threads?: ThreadCreateNestedManyWithoutAccountInput
     emailAddresses?: EmailAddressCreateNestedManyWithoutAccountInput
   }
@@ -11652,6 +11676,7 @@ export namespace Prisma {
     emailAddress: string
     accessToken: string
     nextDeltaToken?: string | null
+    oramaIndex?: NullableJsonNullValueInput | InputJsonValue
     threads?: ThreadUncheckedCreateNestedManyWithoutAccountInput
     emailAddresses?: EmailAddressUncheckedCreateNestedManyWithoutAccountInput
   }
@@ -11692,6 +11717,7 @@ export namespace Prisma {
     emailAddress?: StringFilter<"Account"> | string
     accessToken?: StringFilter<"Account"> | string
     nextDeltaToken?: StringNullableFilter<"Account"> | string | null
+    oramaIndex?: JsonNullableFilter<"Account">
   }
 
   export type UserCreateWithoutAccountsInput = {
@@ -11874,6 +11900,7 @@ export namespace Prisma {
     emailAddress: string
     accessToken: string
     nextDeltaToken?: string | null
+    oramaIndex?: NullableJsonNullValueInput | InputJsonValue
     user: UserCreateNestedOneWithoutAccountsInput
     emailAddresses?: EmailAddressCreateNestedManyWithoutAccountInput
   }
@@ -11885,6 +11912,7 @@ export namespace Prisma {
     emailAddress: string
     accessToken: string
     nextDeltaToken?: string | null
+    oramaIndex?: NullableJsonNullValueInput | InputJsonValue
     emailAddresses?: EmailAddressUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -11984,6 +12012,7 @@ export namespace Prisma {
     emailAddress?: StringFieldUpdateOperationsInput | string
     accessToken?: StringFieldUpdateOperationsInput | string
     nextDeltaToken?: NullableStringFieldUpdateOperationsInput | string | null
+    oramaIndex?: NullableJsonNullValueInput | InputJsonValue
     user?: UserUpdateOneRequiredWithoutAccountsNestedInput
     emailAddresses?: EmailAddressUpdateManyWithoutAccountNestedInput
   }
@@ -11995,6 +12024,7 @@ export namespace Prisma {
     emailAddress?: StringFieldUpdateOperationsInput | string
     accessToken?: StringFieldUpdateOperationsInput | string
     nextDeltaToken?: NullableStringFieldUpdateOperationsInput | string | null
+    oramaIndex?: NullableJsonNullValueInput | InputJsonValue
     emailAddresses?: EmailAddressUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -12772,6 +12802,7 @@ export namespace Prisma {
     emailAddress: string
     accessToken: string
     nextDeltaToken?: string | null
+    oramaIndex?: NullableJsonNullValueInput | InputJsonValue
     user: UserCreateNestedOneWithoutAccountsInput
     threads?: ThreadCreateNestedManyWithoutAccountInput
   }
@@ -12783,6 +12814,7 @@ export namespace Prisma {
     emailAddress: string
     accessToken: string
     nextDeltaToken?: string | null
+    oramaIndex?: NullableJsonNullValueInput | InputJsonValue
     threads?: ThreadUncheckedCreateNestedManyWithoutAccountInput
   }
 
@@ -12888,6 +12920,7 @@ export namespace Prisma {
     emailAddress?: StringFieldUpdateOperationsInput | string
     accessToken?: StringFieldUpdateOperationsInput | string
     nextDeltaToken?: NullableStringFieldUpdateOperationsInput | string | null
+    oramaIndex?: NullableJsonNullValueInput | InputJsonValue
     user?: UserUpdateOneRequiredWithoutAccountsNestedInput
     threads?: ThreadUpdateManyWithoutAccountNestedInput
   }
@@ -12899,6 +12932,7 @@ export namespace Prisma {
     emailAddress?: StringFieldUpdateOperationsInput | string
     accessToken?: StringFieldUpdateOperationsInput | string
     nextDeltaToken?: NullableStringFieldUpdateOperationsInput | string | null
+    oramaIndex?: NullableJsonNullValueInput | InputJsonValue
     threads?: ThreadUncheckedUpdateManyWithoutAccountNestedInput
   }
 
@@ -13052,6 +13086,7 @@ export namespace Prisma {
     emailAddress: string
     accessToken: string
     nextDeltaToken?: string | null
+    oramaIndex?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type AccountUpdateWithoutUserInput = {
@@ -13060,6 +13095,7 @@ export namespace Prisma {
     emailAddress?: StringFieldUpdateOperationsInput | string
     accessToken?: StringFieldUpdateOperationsInput | string
     nextDeltaToken?: NullableStringFieldUpdateOperationsInput | string | null
+    oramaIndex?: NullableJsonNullValueInput | InputJsonValue
     threads?: ThreadUpdateManyWithoutAccountNestedInput
     emailAddresses?: EmailAddressUpdateManyWithoutAccountNestedInput
   }
@@ -13070,6 +13106,7 @@ export namespace Prisma {
     emailAddress?: StringFieldUpdateOperationsInput | string
     accessToken?: StringFieldUpdateOperationsInput | string
     nextDeltaToken?: NullableStringFieldUpdateOperationsInput | string | null
+    oramaIndex?: NullableJsonNullValueInput | InputJsonValue
     threads?: ThreadUncheckedUpdateManyWithoutAccountNestedInput
     emailAddresses?: EmailAddressUncheckedUpdateManyWithoutAccountNestedInput
   }
@@ -13080,6 +13117,7 @@ export namespace Prisma {
     emailAddress?: StringFieldUpdateOperationsInput | string
     accessToken?: StringFieldUpdateOperationsInput | string
     nextDeltaToken?: NullableStringFieldUpdateOperationsInput | string | null
+    oramaIndex?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type ThreadCreateManyAccountInput = {

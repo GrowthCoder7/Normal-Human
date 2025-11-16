@@ -135,7 +135,8 @@ exports.Prisma.AccountScalarFieldEnum = {
   name: 'name',
   emailAddress: 'emailAddress',
   accessToken: 'accessToken',
-  nextDeltaToken: 'nextDeltaToken'
+  nextDeltaToken: 'nextDeltaToken',
+  oramaIndex: 'oramaIndex'
 };
 
 exports.Prisma.ThreadScalarFieldEnum = {
