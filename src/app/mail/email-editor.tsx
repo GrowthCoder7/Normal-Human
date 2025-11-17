@@ -61,7 +61,8 @@ const EmailEditor = ({subject,setSubject,toValues,setToValues,ccValues,setCcValu
         extensions:[StarterKit,CustomText],
         onUpdate:({ editor })=>{
             setValue(editor.getHTML())
-        }
+        },
+        immediatelyRender: typeof window === "undefined" ? false : true,
     })
 
     useEffect(()=>{

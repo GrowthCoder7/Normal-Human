@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
+    // DialogDescription,  <- removed because it's not exported
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -18,7 +18,7 @@ import { Bot } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import useThreads from '@/hooks/use-threads'
-import { useThread } from "../../use-thread"
+import { useThread } from '@/hooks/use-thread'
 import { turndown } from '@/lib/turndown'
 
 type Props = {
@@ -49,17 +49,26 @@ const AIComposeButton = (props: Props) => {
     }
     return (
         <Dialog open={open} onOpenChange={setOpen}>
+            {/* Use a plain native button inside the Trigger to avoid nested <button> */}
             <DialogTrigger>
-                <Button onClick={() => setOpen(true)} size='icon' variant={'outline'}>
-                    <Bot className="size-5" />
-                </Button>
+                <button
+                  type="button"
+                  aria-label="AI compose"
+                  className="inline-flex items-center justify-center rounded-md p-2 border border-gray-200 hover:bg-gray-50"
+                >
+                  <Bot className="w-5 h-5" />
+                </button>
             </DialogTrigger>
+
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>AI Compose</DialogTitle>
-                    <DialogDescription>
+
+                    {/* Replaced DialogDescription with a plain <p> */}
+                    <p className="text-sm text-muted-foreground">
                         AI will compose an email based on the context of your previous emails.
-                    </DialogDescription>
+                    </p>
+
                     <div className="h-2"></div>
                     <Textarea
                         placeholder="What would you like to compose?"
@@ -71,7 +80,6 @@ const AIComposeButton = (props: Props) => {
                 </DialogHeader>
             </DialogContent>
         </Dialog>
-
     )
 }
 

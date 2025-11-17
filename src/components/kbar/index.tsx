@@ -10,14 +10,14 @@ import {
     Priority,
 } from "kbar";
 import RenderResults from "./render-results";
-import { HomeIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+// import { HomeIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import { useLocalStorage } from "usehooks-ts";
 import { usePathname, useRouter } from "next/navigation";
 import useAccountSwitching from "./use-account-switching";
 import useThemeSwitching from "./use-theme-switching";
 import { useAtom } from "jotai";
-import { isSearchingAtom } from "../search-bar";
-import { useThread } from "../../use-thread";
+import { isSearchingAtom } from "@/app/mail/search-bar";
+import { useThread } from "@/hooks/use-thread";
 
 
 export default function KBar({ children }: { children: React.ReactNode }) {

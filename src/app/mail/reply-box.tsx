@@ -1,7 +1,7 @@
 'use client'
 import React from 'react'
 import EmailEditor from './email-editor'
-import { useThread } from '../use-thread'
+import { useThread } from '@/hooks/use-thread'
 import useThreads from '@/hooks/use-threads'
 import { api, type RouterOutputs } from '@/trpc/react'
 import { toast } from 'sonner'

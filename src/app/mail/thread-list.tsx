@@ -8,11 +8,11 @@ import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import { useThread } from "@/app/mail/use-thread"
+import { useThread } from "@/hooks/use-thread";
 import { api, type RouterOutputs } from "@/trpc/react"
 import { useAtom } from "jotai"
-import useVim from "./kbar/use-vim"
-import { useAutoAnimate } from "@formkit/auto-animate/react"
+// import useVim from "./kbar/use-vim"
+// import { useAutoAnimate } from "@formkit/auto-animate/react"
 import { useLocalStorage } from "usehooks-ts"
 // import useThreads from "../use-threads"
 import useThreads from "@/hooks/use-threads";
@@ -24,8 +24,8 @@ export function ThreadList() {
   const { threads, isFetching } = useThreads();
 
   const [threadId, setThreadId] = useThread();
-  const [parent] = useAutoAnimate(/* optional config */);
-  const { selectedThreadIds, visualMode } = useVim();
+  // const [parent] = useAutoAnimate(/* optional config */);
+  // const { selectedThreadIds, visualMode } = useVim();
 
   const groupedThreads = threads?.reduce((acc, thread) => {
     const date = format(thread.lastMessageDate ?? new Date(), "yyyy-MM-dd");
@@ -38,7 +38,7 @@ export function ThreadList() {
 
   return (
     <div className="max-w-full overflow-y-scroll max-h-[calc(100vh-120px)]">
-      <div className="flex flex-col gap-2 p-4 pt-0" ref={parent}>
+      <div className="flex flex-col gap-2 p-4 pt-0">
         {Object.entries(groupedThreads ?? {}).map(([date, threads]) => (
           <React.Fragment key={date}>
             <div className="text-xs font-medium text-muted-foreground mt-4 first:mt-0">
@@ -50,9 +50,9 @@ export function ThreadList() {
                 key={item.id}
                 className={cn(
                   "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all relative",
-                  visualMode &&
-                  selectedThreadIds.includes(item.id) &&
-                  "bg-blue-200 dark:bg-blue-900"
+                  // visualMode &&
+                  // selectedThreadIds.includes(item.id) &&
+                  // "bg-blue-200 dark:bg-blue-900"
                 )}
                 onClick={() => {
                   setThreadId(item.id);

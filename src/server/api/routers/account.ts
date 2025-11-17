@@ -3,7 +3,6 @@ import { createTRPCRouter, privateProcedure } from "../trpc";
 import { db } from "@/server/db";
 import type { Prisma } from "generated/prisma";
 import { emailAddressSchema } from "@/lib/types";
-import { threadId } from "worker_threads";
 import { Account } from "@/lib/account";
 import { OramaManager } from "@/lib/orama";
 
@@ -32,6 +31,18 @@ export const accountRouter = createTRPCRouter({
     })
   })
 ,
+
+  getMyAccount: privateProcedure
+    .input(z.object({ accountId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const account = await authorizeAccountAccess(input.accountId, ctx.auth.userId);
+      return {
+        id: account.id,
+        name: account.name,
+        emailAddress: account.emailAddress,
+      };
+    }),
+    
   getNumThreads:privateProcedure.input(z.object({
     accountId:z.string(),
     tab:z.string()

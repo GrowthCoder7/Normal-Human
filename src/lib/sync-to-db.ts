@@ -11,7 +11,12 @@ import { getEmbeddings } from "./embedding";
 //p-limit stands for promise limit, acts a rate limiter 
 //for db calls , to prevent overloading
 export const syncEmailsToDb= async (emails:EmailMessage[],accountId:string)=>{
-    log('Attempting ot sync ',emails.length,'emails')
+    log('Attempting to sync ',emails.length,'emails')
+    if(emails.length > 0){
+        log("Sample email id (first):")
+    } else {
+        log("No emails received from provider for account:", accountId)
+    }
     
     const orama = new OramaManager(accountId)
     await orama.initialize()

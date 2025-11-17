@@ -1,19 +1,8 @@
 import React from "react";
-import dynamic from "next/dynamic";
 import ThemeToggle from "@/components/ui/theme-toggle";
-import type { MailProps } from "./mail";
+import MailClient from "./mail-client";
 import { UserButton } from "@clerk/nextjs";
-
-const ComposeButton = dynamic(()=>{
-  return import('./compose-button')
-},{
-  ssr:false
-})
-
-const Mail = dynamic<MailProps>(
-  () => import("./mail").then((mod) => mod.default),
-  { ssr: false }
-);
+import ComposeClient from "./compose-client";
 
 const MailDashboard: React.FC = () => {
   return (
@@ -22,10 +11,10 @@ const MailDashboard: React.FC = () => {
         <div className="flex items-center gap-2">
           <UserButton/>
           <ThemeToggle />
-          <ComposeButton/>
+          <ComposeClient/>
         </div>
       </div>
-      <Mail
+      <MailClient
         defaultLayout={[20, 32, 48]}
         defaultCollapsed={false}
         navCollapsedSize={4}

@@ -7,7 +7,7 @@ import { isSearchingAtom, searchValueAtom } from './search-bar'
 import { api } from '@/trpc/react'
 import { useDebounceValue, useLocalStorage } from 'usehooks-ts'
 import useThreads from '@/hooks/use-threads';
-import { useThread } from '../use-thread';
+import {useThread} from '@/hooks/use-thread';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 

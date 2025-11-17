@@ -1,24 +1,26 @@
-import { OpenAIApi, Configuration } from "openai-edge";
-
-const config = new Configuration({
-    apiKey: process.env.OPENAI_API_KEY,
-});
-
-const openai = new OpenAIApi(config);
-
 export async function getEmbeddings(text: string) {
     try {
-        const response = await openai.createEmbedding({
-            model: "text-embedding-ada-002",
-            input: text.replace(/\n/g, " "),
+        // call your local embedding server instead of OpenAI
+        const response = await fetch("http://127.0.0.1:8000/embed", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                text: text.replace(/\n/g, " "),
+            }),
         });
+
+        if (!response.ok) {
+            throw new Error(`Local embed server error: ${response.status}`);
+        }
+
         const result = await response.json();
-        // console.log(result)
-        return result.data[0].embedding as number[];
+
+        // result.embedding is already a 1D number[]
+        return result.embedding as number[];
     } catch (error) {
-        console.log("error calling openai embeddings api", error);
+        console.log("error calling local embeddings api", error);
         throw error;
     }
 }
-
-// console.log(await getEmbeddings("Hello Prince!"));

@@ -44,7 +44,7 @@ import {
 import { api, type RouterOutputs } from "@/trpc/react"
 import { addDays, addHours, format, nextSaturday } from "date-fns"
 import EmailDisplay from "./email-display";
-import { useThread } from "../use-thread";
+import { useThread } from "@/hooks/use-thread";
 // import useThreads from "../use-threads";
 import useThreads from "@/hooks/use-threads";
 import { useAtom } from "jotai";

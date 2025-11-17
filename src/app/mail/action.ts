@@ -1,87 +1,124 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use server';
-import TurndownService from 'turndown'
-
-import { streamText } from 'ai';
-import { openai } from '@ai-sdk/openai';
+import TurndownService from 'turndown';
 import { createStreamableValue } from 'ai/rsc';
 
-export async function generateEmail(context: string, prompt: string) {
-    console.log("context", context)
-    const stream = createStreamableValue('');
+/**
+ * Helper: forward an upstream fetch response into a createStreamableValue stream.
+ * - Accepts streaming text responses (chunked) OR non-streaming JSON { text: "..." }.
+ */
+async function streamUpstreamToStreamable(upstreamUrl: string, bodyObj: any) {
+  const stream = createStreamableValue('');
 
-    (async () => {
-        const { textStream } = await streamText({
-            model: openai('gpt-5.1'),
-            prompt: `
-            You are an AI email assistant embedded in an email client app. Your purpose is to help the user compose emails by providing suggestions and relevant information based on the context of their previous emails.
-            
-            THE TIME NOW IS ${new Date().toLocaleString()}
-            
-            START CONTEXT BLOCK
-            ${context}
-            END OF CONTEXT BLOCK
-            
-            USER PROMPT:
-            ${prompt}
-            
-            When responding, please keep in mind:
-            - Be helpful, clever, and articulate. 
-            - Rely on the provided email context to inform your response.
-            - If the context does not contain enough information to fully address the prompt, politely give a draft response.
-            - Avoid apologizing for previous responses. Instead, indicate that you have updated your knowledge based on new information.
-            - Do not invent or speculate about anything that is not directly supported by the email context.
-            - Keep your response focused and relevant to the user's prompt.
-            - Don't add fluff like 'Heres your email' or 'Here's your email' or anything like that.
-            - Directly output the email, no need to say 'Here is your email' or anything like that.
-            - No need to output subject
-            `,
-        });
+  (async () => {
+    try {
+      const upstream = await fetch(upstreamUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // send prompt/body already prepared by caller
+        body: JSON.stringify(bodyObj),
+      });
 
-        for await (const delta of textStream) {
-            stream.update(delta);
-        }
-
+      if (!upstream.ok) {
+        // Try to read error text
+        const errText = await upstream.text().catch(() => upstream.statusText);
+        stream.update(`\n\n[upstream error ${upstream.status}: ${errText}]`);
         stream.done();
-    })();
+        return;
+      }
 
-    return { output: stream.value };
+      // If upstream streams bytes (ReadableStream present) -> read chunks
+      if (upstream.body) {
+        const reader = upstream.body.getReader();
+        const decoder = new TextDecoder();
+        let done = false;
+        while (!done) {
+          const { value, done: rdone } = await reader.read();
+          done = !!rdone;
+          if (value) {
+            const chunk = decoder.decode(value, { stream: true });
+            stream.update(chunk);
+          }
+        }
+        stream.done();
+        return;
+      }
+
+      // If no body stream, try to parse JSON { text: '...' }
+      const ct = upstream.headers.get('content-type') || '';
+      if (ct.includes('application/json')) {
+        const json = await upstream.json().catch(() => null);
+        const text = (json && (json.text || json.output || json.result)) ?? JSON.stringify(json);
+        stream.update(String(text));
+        stream.done();
+        return;
+      }
+
+      // Fallback: read as text
+      const txt = await upstream.text().catch(() => '');
+      stream.update(txt);
+      stream.done();
+    } catch (err) {
+      console.error('streamUpstreamToStreamable error', err);
+      stream.update('\n\n[local generation error]');
+      stream.done();
+    }
+  })();
+
+  return stream;
 }
 
+/**
+ * generateEmail - used by AIComposeButton previously
+ */
+export async function generateEmail(context: string, prompt: string) {
+  // Build a composite prompt you can send to your local generator
+  const now = new Date().toLocaleString();
+  const fullPrompt = `
+You are an AI email assistant embedded in an email client app. Your purpose is to help the user compose emails by providing suggestions and relevant information based on the context of their previous emails.
+
+THE TIME NOW IS ${now}
+
+START CONTEXT BLOCK
+${context ?? ''}
+END OF CONTEXT BLOCK
+
+USER PROMPT:
+${prompt}
+
+When responding, please keep in mind:
+- Be helpful, clever, and articulate.
+- Rely on the provided email context to inform your response.
+- If the context does not contain enough information to fully address the prompt, politely give a draft response.
+- Avoid apologizing for previous responses. Instead, indicate that you have updated your knowledge based on new information.
+- Do not invent or speculate about anything that is not directly supported by the email context.
+- Keep your response focused and relevant to the user's prompt.
+- Directly output the email body only.
+`;
+
+  // Point this at your local generator. I suggest running a simple generator server at port 8001.
+  const upstreamUrl = 'http://localhost:8001/generate';
+
+  // Ask the helper to stream upstream result into a createStreamableValue
+  return {
+    output: await streamUpstreamToStreamable(upstreamUrl, { prompt: fullPrompt }),
+  };
+}
+
+/**
+ * generate - used for autocomplete (the Cmd+J shortcut)
+ */
 export async function generate(input: string) {
-    const stream = createStreamableValue('');
+  const now = new Date().toLocaleString();
+  const fullPrompt = `
+ALWAYS RESPOND IN PLAIN TEXT, no html or markdown.
+You are a helpful AI embedded in an email client app that is used to autocomplete sentences.
+The traits of AI: helpful, clever, and articulate.
+Help me complete my train of thought here: <input>${input}</input>
+Keep the response short and sweet. Your output is directly concatenated to the input; do not add new lines or formatting.
+  `;
 
-    console.log("input", input);
-    (async () => {
-        const { textStream } = await streamText({
-            model: openai('gpt-5.1-chat-latest'),
-            prompt: `
-            ALWAYS RESPOND IN PLAIN TEXT, no html or markdown.
-            You are a helpful AI embedded in a email client app that is used to autocomplete sentences, similar to google gmail autocomplete
-            The traits of AI include expert knowledge, helpfulness, cleverness, and articulateness.
-            AI is a well-behaved and well-mannered individual.
-            AI is always friendly, kind, and inspiring, and he is eager to provide vivid and thoughtful responses to the user.
-            I am writing a piece of text in a notion text editor app.
-            Help me complete my train of thought here: <input>${input}</input>
-            keep the tone of the text consistent with the rest of the text.
-            keep the response short and sweet. Act like a copilot, finish my sentence if need be, but don't try to generate a whole new paragraph.
-            Do not add fluff like "I'm here to help you" or "I'm a helpful AI" or anything like that.
+  const upstreamUrl = 'http://localhost:8001/generate';
 
-            Example:
-            Dear Alice, I'm sorry to hear that you are feeling down.
-
-            Output: Unfortunately, I can't help you with that.
-
-            Your output is directly concatenated to the input, so do not add any new lines or formatting, just plain text.
-            `,
-        });
-
-        for await (const delta of textStream) {
-            stream.update(delta);
-        }
-
-        stream.done();
-    })();
-
-    return { output: stream.value };
+  return { output: await streamUpstreamToStreamable(upstreamUrl, { prompt: fullPrompt }) };
 }

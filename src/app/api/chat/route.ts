@@ -1,7 +1,6 @@
+// src/app/api/chat/route.ts
 import { auth } from "@clerk/nextjs/server";
 import { OramaManager } from "@/lib/orama";
-import { openai } from "@ai-sdk/openai"; // keep if you have this package configured
-import { streamText } from "ai"; // streaming helper (optional)
 import { log } from "console";
 
 export type Message = {
@@ -9,8 +8,8 @@ export type Message = {
   content: string;
 };
 
-const OPENAI_MODEL = "gpt-5.1"; // change to your preferred model
 const MAX_CONTEXT_HITS = 10; // keep only top-k hits to limit prompt size
+const LOCAL_GENERATOR_URL = process.env.LOCAL_GEN_URL ?? "http://localhost:8002/chat";
 
 /** Safely stringify possibly-circular objects for the prompt */
 function safeStringify(obj: any) {
@@ -99,77 +98,53 @@ export async function POST(req: Request) {
       ...messages.map((m: Message) => ({ role: m.role, content: m.content })),
     ];
 
-    // --- Try typical streaming APIs (SDKs differ) ---
-    // 1) Some SDKs provide a `.stream` helper (original code).
-    const completions = (openai as any)?.chat?.completions;
+    // ---- Proxy to local generator ----
+    // Send the chatMessages to a local generator you run on your machine.
+    // The generator may:
+    //  - stream token chunks (via chunked response / SSE) -> this code proxies the raw body
+    //  - return JSON { text: "..." } -> we will return that text
+    //  - return plain text -> we return that text
+    const upstream = await fetch(LOCAL_GENERATOR_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ messages: chatMessages, accountId }),
+      // keep credentials omitted; it's server-to-server local
+    });
 
-    // If SDK offers a stream(...) method that returns a stream-like object compatible with streamText:
-    if (typeof completions?.stream === "function") {
-      const streamResult = await completions.stream({
-        model: OPENAI_MODEL,
-        messages: chatMessages,
-        temperature: 0.2,
-      });
-      // streamText from 'ai' expects the SDK stream shape in many examples.
-      if (typeof streamText === "function") {
-        return streamText(streamResult);
-      }
-      // fallback if streamText is not available
-      if (streamResult?.body) {
-        return new Response(streamResult.body, {
-          status: 200,
-          headers: { "Content-Type": "text/event-stream" },
-        });
-      }
+    if (!upstream.ok) {
+      const errText = await upstream.text().catch(() => upstream.statusText);
+      log("Upstream generation error:", upstream.status, errText);
+      return new Response(`Upstream error: ${upstream.status} ${errText}`, { status: 502 });
     }
 
-    // 2) Fallback: SDK supports create(..., { stream: true }) and returns a Response-like object
-    if (typeof completions?.create === "function") {
-      const result = await completions.create({
-        model: OPENAI_MODEL,
-        messages: chatMessages,
-        temperature: 0.2,
-        // Many SDKs use `stream: true` to request streaming responses
-        stream: true,
+    // If the upstream provides a streaming body (ReadableStream), proxy it directly.
+    // This preserves chunked streaming / SSE for client consumers (ai/react or streamText).
+    if (upstream.body) {
+      const ct = upstream.headers.get("content-type") || "text/event-stream; charset=utf-8";
+      // Clone headers we want to pass through
+      const headers = new Headers();
+      headers.set("Content-Type", ct);
+      // return the raw upstream stream body to the client
+      return new Response(upstream.body, {
+        status: 200,
+        headers,
       });
-
-      // If the SDK returns an object with a readable `body` (like fetch Response), return it directly:
-      if (result?.body) {
-        return new Response(result.body, {
-          status: 200,
-          headers: { "Content-Type": "text/event-stream" },
-        });
-      }
-
-      // If `streamText` is available and expects the SDK result, use it:
-      if (typeof streamText === "function") {
-        return streamText(result);
-      }
-
-      // Otherwise return a JSON fallback (non-streaming)
-      if (result?.toString) {
-        return new Response(String(result), { status: 200 });
-      }
     }
 
-    // 3) If we got here, the SDK shape wasn't recognized — as a last resort call a non-streaming create (if exists)
-    if (typeof completions?.create === "function") {
-      const result = await completions.create({
-        model: OPENAI_MODEL,
-        messages: chatMessages,
-        temperature: 0.2,
-        stream: false,
-      });
-
-      // Try to extract text from a typical response structure
-      const text =
-        result?.choices?.map((c: any) => c.message?.content ?? c.text ?? "").join("\n") ??
-        JSON.stringify(result);
-
-      return new Response(text, { status: 200, headers: { "Content-Type": "text/plain;charset=utf-8" } });
+    // If not streaming, try JSON
+    const contentType = (upstream.headers.get("content-type") || "").toLowerCase();
+    if (contentType.includes("application/json")) {
+      const j = await upstream.json().catch(() => null);
+      const text = j?.text ?? j?.output ?? JSON.stringify(j ?? "");
+      return new Response(String(text), { status: 200, headers: { "Content-Type": "text/plain; charset=utf-8" } });
     }
 
-    return new Response("OpenAI SDK shape not recognized. Check SDK docs.", { status: 500 });
+    // Fallback: read as text and return plain text
+    const txt = await upstream.text().catch(() => "");
+    return new Response(txt, { status: 200, headers: { "Content-Type": "text/plain; charset=utf-8" } });
+
   } catch (err: any) {
     log("Mail assistant error:", err);
     const body = typeof err === "string" ? err : err?.message ?? "Internal Server Error";
