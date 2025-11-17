@@ -10,7 +10,7 @@ import TagInput from './tag-inputs'
 import { set } from 'date-fns'
 import { Input } from '@/components/ui/input'
 import AIComposeButton from './ai-compose-button'
-import { generate } from './action'
+import { generateEmail } from './action'
 import { read } from 'fs'
 import { readStreamableValue } from 'ai/rsc'
 
@@ -37,7 +37,7 @@ const EmailEditor = ({subject,setSubject,toValues,setToValues,ccValues,setCcValu
     const [token, setToken] = useState('')
 
     const aiGenerate = async(value:string)=>{
-        const {output} = await generate(value)
+        const {output} = await generateEmail(value,value)
         for await (const token of readStreamableValue(output)) {
             if(token){
                 editor?.commands.insertContent(token)
