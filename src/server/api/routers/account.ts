@@ -164,31 +164,77 @@ export const accountRouter = createTRPCRouter({
     }
   }),
 
-  sendEmail:privateProcedure.input(z.object({
-    accountId:z.string(),
-    body:z.string(),
-    subject:z.string(),
-    from:emailAddressSchema,
-    cc:z.array(emailAddressSchema).optional(),
-    bcc:z.array(emailAddressSchema).optional(),
-    to:z.array(emailAddressSchema),
-    replyTo:z.string().optional(),
-    inReplyTo:z.string().optional(),
-    threadId:z.string()
-  })).mutation(async ({ctx,input})=>{
-    const account = await authorizeAccountAccess(input.accountId,ctx.auth.userId)
-    const acc = new Account(account.accessToken)
-    await acc.sendEmail({
-      from:input.from,
-      subject:input.subject,
-      body:input.body,
-      inReplyTo:input.inReplyTo,
-      threadId:input.threadId,
-      to:input.to,
-      cc:input.cc,
-      bcc:input.bcc
-    })
-  }),
+    sendEmail: privateProcedure
+    .input(z.object({
+      accountId: z.string(),
+      body: z.string(),
+      subject: z.string(),
+      from: emailAddressSchema,
+      cc: z.array(emailAddressSchema).optional(),
+      bcc: z.array(emailAddressSchema).optional(),
+      to: z.array(emailAddressSchema),
+      // allow replyTo to be string, single emailAddressSchema, or array of emailAddressSchema
+      replyTo: z.union([
+        z.string(),
+        emailAddressSchema,
+        z.array(emailAddressSchema)
+      ]).optional(),
+      inReplyTo: z.string().optional(),
+      threadId: z.string().optional() // make optional for safety
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const account = await authorizeAccountAccess(input.accountId, ctx.auth.userId);
+      const acc = new Account(account.accessToken);
+
+      // Normalize helpers
+      const normalizeEmailObj = (v: any) => {
+        // If string -> treat as address only
+        if (typeof v === "string") {
+          return { name: "", address: v };
+        }
+        // If it's already shaped similar to { address, name } assume correct
+        if (v && typeof v === "object") {
+          // prefer `value` or `address` for address field if using tag-like objects
+          const address = v.value ?? v.address ?? v.label ?? "";
+          const name = v.name ?? v.label ?? "";
+          return { name, address };
+        }
+        return undefined;
+      };
+
+      const normalizeArray = (arr: any[] | undefined) => {
+        if (!arr) return undefined;
+        return arr.map(normalizeEmailObj).filter(Boolean);
+      };
+
+      // Normalize replyTo into EmailAddress[] | undefined
+      let replyToNormalized: any[] | undefined = undefined;
+      if (input.replyTo) {
+        if (typeof input.replyTo === "string") {
+          replyToNormalized = [{ name: "", address: input.replyTo }];
+        } else if (Array.isArray(input.replyTo)) {
+          replyToNormalized = normalizeArray(input.replyTo);
+        } else {
+          // single object
+          const item = normalizeEmailObj(input.replyTo);
+          if (item) replyToNormalized = [item];
+        }
+      }
+
+      // Call sendEmail with normalized arrays
+      await acc.sendEmail({
+        from: input.from,
+        subject: input.subject,
+        body: input.body,
+        inReplyTo: input.inReplyTo,
+        threadId: input.threadId,
+        to: normalizeArray(input.to) ?? [],
+        cc: normalizeArray(input.cc) ?? [],
+        bcc: normalizeArray(input.bcc) ?? [],
+        replyTo: replyToNormalized,
+      });
+    }),
+
 
   searchEmails: privateProcedure.input(z.object({
     accountId:z.string(),
@@ -202,3 +248,4 @@ export const accountRouter = createTRPCRouter({
   })
 
 })
+

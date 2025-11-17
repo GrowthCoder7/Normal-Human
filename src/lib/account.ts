@@ -417,23 +417,26 @@ export class Account {
     to: EmailAddress[];
     cc?: EmailAddress[];
     bcc?: EmailAddress[];
-    replyTo?: EmailAddress[];
+    replyTo?: EmailAddress[]; // array or undefined
   }) {
     try {
+      const payload: any = {
+        from,
+        subject,
+        body,
+        inReplyTo,
+        references,
+        threadId,
+        to,
+      };
+
+      if (cc && cc.length) payload.cc = cc;
+      if (bcc && bcc.length) payload.bcc = bcc;
+      if (replyTo && replyTo.length) payload.replyTo = replyTo; // <-- send as array, do not nest
+
       const response = await axios.post(
         "https://api.aurinko.io/v1/email/messages",
-        {
-          from,
-          subject,
-          body,
-          inReplyTo,
-          references,
-          threadId,
-          to,
-          cc,
-          bcc,
-          replyTo: [replyTo],
-        },
+        payload,
         {
           params: {
             returnIds: true,

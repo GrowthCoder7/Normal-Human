@@ -1,124 +1,113 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use server';
-import TurndownService from 'turndown';
 import { createStreamableValue } from 'ai/rsc';
 
 /**
- * Helper: forward an upstream fetch response into a createStreamableValue stream.
- * - Accepts streaming text responses (chunked) OR non-streaming JSON { text: "..." }.
+ * Helper: read SSE stream from upstream fetch Response and call cb(chunk)
+ * Expects messages formatted as: data: <chunk>\n\n
  */
-async function streamUpstreamToStreamable(upstreamUrl: string, bodyObj: any) {
+async function streamSSEToCallback(resp: Response, onChunk: (chunk: string) => void) {
+  if (!resp.body) return;
+  const reader = resp.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    // process complete events
+    let idx;
+    while ((idx = buffer.indexOf('\n\n')) !== -1) {
+      const raw = buffer.slice(0, idx);
+      buffer = buffer.slice(idx + 2);
+      // raw may contain multiple lines (e.g., 'data: chunk\n')
+      const lines = raw.split(/\r?\n/);
+      for (const line of lines) {
+        if (line.startsWith('data:')) {
+          const d = line.replace(/^data:\s?/, '');
+          // unescape \n used above
+          onChunk(d.replace(/\\n/g, '\n'));
+        }
+      }
+    }
+  }
+  // flush any remaining (rare)
+  if (buffer.length) {
+    const lines = buffer.split(/\r?\n/);
+    for (const line of lines) {
+      if (line.startsWith('data:')) {
+        onChunk(line.replace(/^data:\s?/, '').replace(/\\n/g, '\n'));
+      }
+    }
+  }
+}
+
+export async function generateEmail(context: string, prompt: string) {
   const stream = createStreamableValue('');
 
   (async () => {
     try {
-      const upstream = await fetch(upstreamUrl, {
+      const upstream = await fetch('http://localhost:8001/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // send prompt/body already prepared by caller
-        body: JSON.stringify(bodyObj),
+        body: JSON.stringify({
+          prompt: `You are an AI email assistant. TIME: ${new Date().toISOString()}\n\nCONTEXT:\n${context}\n\nPROMPT:\n${prompt}\n\nEmail:`,
+          max_new_tokens: 320,
+          temperature: 0.6,
+        }),
       });
 
       if (!upstream.ok) {
-        // Try to read error text
-        const errText = await upstream.text().catch(() => upstream.statusText);
-        stream.update(`\n\n[upstream error ${upstream.status}: ${errText}]`);
+        const txt = await upstream.text().catch(() => 'upstream error');
+        stream.update(`\n[Error from generator: ${upstream.status}] ${txt}`);
         stream.done();
         return;
       }
 
-      // If upstream streams bytes (ReadableStream present) -> read chunks
-      if (upstream.body) {
-        const reader = upstream.body.getReader();
-        const decoder = new TextDecoder();
-        let done = false;
-        while (!done) {
-          const { value, done: rdone } = await reader.read();
-          done = !!rdone;
-          if (value) {
-            const chunk = decoder.decode(value, { stream: true });
-            stream.update(chunk);
-          }
-        }
-        stream.done();
-        return;
-      }
-
-      // If no body stream, try to parse JSON { text: '...' }
-      const ct = upstream.headers.get('content-type') || '';
-      if (ct.includes('application/json')) {
-        const json = await upstream.json().catch(() => null);
-        const text = (json && (json.text || json.output || json.result)) ?? JSON.stringify(json);
-        stream.update(String(text));
-        stream.done();
-        return;
-      }
-
-      // Fallback: read as text
-      const txt = await upstream.text().catch(() => '');
-      stream.update(txt);
+      await streamSSEToCallback(upstream, (delta) => {
+        stream.update(delta);
+      });
       stream.done();
     } catch (err) {
-      console.error('streamUpstreamToStreamable error', err);
-      stream.update('\n\n[local generation error]');
+      stream.update(`\n[Generation error] ${String(err)}`);
       stream.done();
     }
   })();
 
-  return stream;
+  return { output: stream.value };
 }
 
-/**
- * generateEmail - used by AIComposeButton previously
- */
-export async function generateEmail(context: string, prompt: string) {
-  // Build a composite prompt you can send to your local generator
-  const now = new Date().toLocaleString();
-  const fullPrompt = `
-You are an AI email assistant embedded in an email client app. Your purpose is to help the user compose emails by providing suggestions and relevant information based on the context of their previous emails.
-
-THE TIME NOW IS ${now}
-
-START CONTEXT BLOCK
-${context ?? ''}
-END OF CONTEXT BLOCK
-
-USER PROMPT:
-${prompt}
-
-When responding, please keep in mind:
-- Be helpful, clever, and articulate.
-- Rely on the provided email context to inform your response.
-- If the context does not contain enough information to fully address the prompt, politely give a draft response.
-- Avoid apologizing for previous responses. Instead, indicate that you have updated your knowledge based on new information.
-- Do not invent or speculate about anything that is not directly supported by the email context.
-- Keep your response focused and relevant to the user's prompt.
-- Directly output the email body only.
-`;
-
-  // Point this at your local generator. I suggest running a simple generator server at port 8001.
-  const upstreamUrl = 'http://localhost:8001/generate';
-
-  // Ask the helper to stream upstream result into a createStreamableValue
-  return {
-    output: await streamUpstreamToStreamable(upstreamUrl, { prompt: fullPrompt }),
-  };
-}
-
-/**
- * generate - used for autocomplete (the Cmd+J shortcut)
- */
 export async function generate(input: string) {
-  const now = new Date().toLocaleString();
-  const fullPrompt = `
-ALWAYS RESPOND IN PLAIN TEXT, no html or markdown.
-You are a helpful AI embedded in an email client app that is used to autocomplete sentences.
-The traits of AI: helpful, clever, and articulate.
-Help me complete my train of thought here: <input>${input}</input>
-Keep the response short and sweet. Your output is directly concatenated to the input; do not add new lines or formatting.
-  `;
+  const stream = createStreamableValue('');
 
-  const upstreamUrl = 'http://localhost:8001/generate';
+  (async () => {
+    try {
+      const upstream = await fetch('http://localhost:8001/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: `You are a short autocomplete assistant. Continue the following text:\n\n${input}`,
+          max_new_tokens: 64,
+          temperature: 0.2,
+        }),
+      });
 
-  return { output: await streamUpstreamToStreamable(upstreamUrl, { prompt: fullPrompt }) };
+      if (!upstream.ok) {
+        const txt = await upstream.text().catch(() => 'upstream error');
+        stream.update(`\n[Error from generator: ${upstream.status}] ${txt}`);
+        stream.done();
+        return;
+      }
+
+      await streamSSEToCallback(upstream, (delta) => {
+        stream.update(delta);
+      });
+      stream.done();
+    } catch (err) {
+      stream.update(`\n[Generation error] ${String(err)}`);
+      stream.done();
+    }
+  })();
+
+  return { output: stream.value };
 }
